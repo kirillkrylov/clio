@@ -33,7 +33,7 @@ namespace bpmcli
 		public string ExecutorType { get; set; }
 	}
 
-	[Verb("restart", HelpText = "Restart application")]
+	[Verb("restart-web-app", HelpText = "Restart web application")]
 	internal class RestartOptions : BaseOptions
 	{
 	}
@@ -59,6 +59,21 @@ namespace bpmcli
 		public string Packages  { get; set; }
 	}
 
+	[Verb("login-web-app", HelpText = "Configure environment settings")]
+	internal class LoginOptions : BaseOptions
+	{
+	}
+
+	[Verb("logout-web-app", HelpText = "Configure environment settings")]
+	internal class LogoutOptions : BaseOptions
+	{
+	}
+
+	[Verb("reg-web-app", HelpText = "Configure environment settings")]
+	internal class RegistrationOptions : BaseOptions
+	{
+	}
+
 	[Verb("cfg", HelpText = "Configure environment settings")]
 	internal class ConfigureOptions : BaseOptions
 	{
@@ -66,18 +81,18 @@ namespace bpmcli
 		public string ActiveEnvironment { get; set; }
 	}
 
-	[Verb("view", HelpText = "Show environments")]
+	[Verb("show-web-app-list", HelpText = "Show registred web applications")]
 	internal class ViewOptions {
 	}
 
-	[Verb("remove", HelpText = "Remove environment settings")]
+	[Verb("unreg-web-app", HelpText = "Unregister web application")]
 	internal class RemoveOptions : BaseOptions
 	{
 		[Option('e', "ActiveEnvironment", Required = true, HelpText = "Environment name")]
 		public new string Environment { get; set; }
 	}
 
-	[Verb("install", HelpText = "Install package")]
+	[Verb("push-pkg", HelpText = "Install package")]
 	internal class InstallOptions : BaseOptions
 	{
 		[Option('f', "FilePath", Required = true, HelpText = "Package file path")]
@@ -86,10 +101,10 @@ namespace bpmcli
 		public string ReportPath { get; set; }
 	}
 
-	[Verb("delete", HelpText = "Delete package")]
+	[Verb("delete-pkg-remote", HelpText = "Delete package")]
 	internal class DeleteOptions : BaseOptions
 	{
-		[Option('c', "Code", Required = true, HelpText = "Package code")]
+		[Option('n', "Name", Required = true, HelpText = "Package code")]
 		public string Code { get; set; }
 	}
 
@@ -106,7 +121,7 @@ namespace bpmcli
 
 	}
 
-	[Verb("new", HelpText = "Create new instance in bpmonline")]
+	[Verb("new-pkg", HelpText = "Create new instance in bpmonline")]
 	internal class NewOptions
 	{
 		[Value(0, MetaName = "<TEMPLATE NAME>", Required = true, HelpText = "Template of the created instance. Can be (pkg)")]
@@ -119,7 +134,7 @@ namespace bpmcli
 		[Option('r', Required = false, Default = "true", HelpText = "Execute rebase command after create")]
 		public string Rebase { get; set; }
 		[Usage(ApplicationAlias = "bpmcli")]
-		public static IEnumerable<Example> Examples => 
+		public static IEnumerable<Example> Examples =>
 			new List<Example> {
 				new Example("Create new package with name 'ContactPkg'",
 					new NewOptions { Name = "ContactPkg" , Template = "pkg"}
@@ -128,7 +143,7 @@ namespace bpmcli
 	}
 
 
-	[Verb("convert", HelpText = "Convert package to project")]
+	[Verb("generate-pkg-zip", HelpText = "Convert package to project")]
 	internal class ConvertOptions
 	{
 		[Value(0, MetaName = "<TEMPLATE NAME>", Required = false, HelpText = "Template of the created instance. Can be (pkg)")]
