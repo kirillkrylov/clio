@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("bpmcli.tests")]
 
 namespace bpmcli.environment
 {
+	
 	internal class BpmcliEnvironment : IBpmcliEnvironment
 	{
-		private const string PathVariableName = "PATH";
+		public const string PathVariableName = "PATH";
 
 		private IResult RegisterPath(string path, EnvironmentVariableTarget target) {
 			var result = new EnvironmentResult();
