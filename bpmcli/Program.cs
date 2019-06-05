@@ -12,20 +12,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using bpmcli.environment;
+using bpmcli.Extensions;
 using CommandLine;
 using ConsoleTables;
 using Newtonsoft.Json;
 
 namespace bpmcli
 {
-
-	public class StringParser
-	{
-		public static IEnumerable<string> ParseArray(string input) {
-			return input.Split(',').Select(p => p.Trim()).ToList();
-		}
-	}
-
 	class Program {
 		private static string _userName;
 		private static string _userPassword;
@@ -323,7 +316,7 @@ namespace bpmcli
 		}
 
 		internal static IEnumerable<string> GetPackages(string inputline) {
-			return StringParser.ParseArray(inputline);
+			return inputline.ParseArray();
 		}
 
 		private static void CompressionProject(string sourcePath, string destinationPath) {
