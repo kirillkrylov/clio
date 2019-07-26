@@ -16,6 +16,7 @@ using ConsoleTables;
 using Newtonsoft.Json;
 using Bpmonline.Client;
 using bpmcli.Feature;
+using bpmcli.Command;
 
 namespace bpmcli
 {
@@ -35,14 +36,13 @@ namespace bpmcli
 		private static EnvironmentSettings _settings;
 		private static string _environmentName;
 
-		private static string ExecutorUrl => _url + @"/0/IDE/ExecuteScript";
+
 		private static string UnloadAppDomainUrl => _url + @"/0/ServiceModel/AppInstallerService.svc/UnloadAppDomain";
 		private static string DownloadPackageUrl => _url + @"/0/ServiceModel/AppInstallerService.svc/LoadPackagesToFileSystem";
 		private static string UploadPackageUrl => _url + @"/0/ServiceModel/AppInstallerService.svc/LoadPackagesToDB";
 		private static string UploadUrl => _url + @"/0/ServiceModel/PackageInstallerService.svc/UploadPackage";
 		private static string InstallUrl => _url + @"/0/ServiceModel/PackageInstallerService.svc/InstallPackage";
 		private static string LogUrl => _url + @"/0/ServiceModel/PackageInstallerService.svc/GetLogFile";
-		private static string SelectQueryUrl => _url + @"/0/DataService/json/SyncReply/SelectQuery";
 		private static string DeletePackageUrl => _url + @"/0/ServiceModel/AppInstallerService.svc/DeletePackage";
 		private static string ClearRedisDbUrl => _url + @"/0/ServiceModel/AppInstallerService.svc/ClearRedisDb";
 		private static string GetZipPackageUrl => _url + @"/0/ServiceModel/PackageInstallerService.svc/GetZipPackages";
@@ -198,8 +198,6 @@ namespace bpmcli
 			CheckApiVersion();
 		}
 
-
-
 		public static void CheckApiVersion() {
 			var dir = AppDomain.CurrentDomain.BaseDirectory;
 			string versionFilePath = Path.Combine(dir, "bpmcligate", "version.txt");
@@ -214,7 +212,6 @@ namespace bpmcli
 			}
 		}
 
-	
 		private static Version GetAppApiVersion() {
 			var apiVersion = new Version("0.0.0.0");
 			try {
@@ -223,16 +220,6 @@ namespace bpmcli
 			} catch (Exception) {
 			}
 			return apiVersion;
-		}
-
-		private static void ExecuteScript(ExecuteAssemblyOptions options) {
-			string filePath = options.Name;
-			string executorType = options.ExecutorType;
-			var fileContent = File.ReadAllBytes(filePath);
-			string body = Convert.ToBase64String(fileContent);
-			string requestData = @"{""Body"":""" + body + @""",""LibraryType"":""" + executorType + @"""}";
-			var responseFromServer = BpmonlineClient.ExecutePostRequest(ExecutorUrl, requestData);
-			Console.WriteLine(responseFromServer);
 		}
 
 		private static void RestartInternal() {
@@ -542,10 +529,19 @@ namespace bpmcli
 			return fileName;
 		}
 
-		private static int Execute(ExecuteAssemblyOptions options) {
-			Configure(options);
-			ExecuteScript(options);
-			return 0;
+
+
+
+		private static int ExecuteCommand(EnvironmentOptions options) {
+			try {
+				Configure(options);
+				var command = CommandFactory.GetCommand(options);
+				command.Execute(options);
+				return 0;
+			} catch (Exception e) {
+				Console.WriteLine(e);
+				return 1;
+			}
 		}
 
 		private static int Register(RegisterOptions options) {
@@ -698,7 +694,7 @@ namespace bpmcli
 					UpdateCliOptions, ExecuteSqlScriptOptions, InstallGateOptions, ItemOptions, DeveloperModeOptions,
 					SysSettingsOptions, FeatureOptions>(args)
 				.MapResult(
-					(ExecuteAssemblyOptions opts) => Execute(opts),
+					(ExecuteAssemblyOptions opts) => ExecuteCommand(opts),
 					(RestartOptions opts) => Restart(opts),
 					(ClearRedisOptions opts) => ClearRedisDb(opts),
 					(FetchOptions opts) => Fetch(opts),
@@ -815,7 +811,7 @@ namespace bpmcli
 				return AddModels(options);
 			} else {
 				return AddItemFromTemplate(options);
-			} 
+			}
 		}
 
 		private static void CreateSysSetting(SysSettingsOptions opts) {
@@ -845,7 +841,7 @@ namespace bpmcli
 				Configure(opts);
 				CreateSysSetting(opts);
 				UpdateSysSetting(opts);
-			} catch (Exception ex) {
+			} catch (Exception) {
 				return 1;
 			}
 			return 0;
@@ -856,7 +852,7 @@ namespace bpmcli
 				Configure(options);
 				var fm = new FeatureModerator(BpmonlineClient);
 				switch (options.State) {
-					case 0: 
+					case 0:
 						fm.SwitchFeatureOff(options.Code);
 						break;
 					case 1:
@@ -992,6 +988,17 @@ namespace bpmcli
 				Console.WriteLine(e);
 				return 1;
 			}
+		}
+	}
+
+	internal class CommandFactory
+	{
+		internal static BpmonlineCommand<> GetCommand<T>(T options) {
+			switch (T) {
+				case T is ExecuteAssemblyOptions
+					return new ExecuteAssemblyCommand();
+				default:
+					throw new NotSupportedException(options.GetType().Name);
 		}
 	}
 }
